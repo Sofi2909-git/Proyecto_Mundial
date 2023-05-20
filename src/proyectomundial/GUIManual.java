@@ -26,6 +26,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableModel;
 
 /**
  * Creador: Ing. Miguel Ropero - Profesor de Universidad Simon Bolivar
@@ -41,7 +42,6 @@ public class GUIManual extends JFrame {
 
     // Elementos de bara Lateral
     private JPanel jPanelLeft;
-
     private JPanel jPanelIconFIFA;
     private JLabel iconFIFA;
 
@@ -72,12 +72,16 @@ public class GUIManual extends JFrame {
     private JLabel jLabelTop;
 
     private JPanel jPanelMain;
-    private JPanel dashSelecciones;
+
+    //Elementos para mostrar información en los dash
+    private JPanel panelDash;
+    private JTable table;
+    private JScrollPane scrollPane;
 
     //Variables globales para el parcial 
     //Matriz usada para la nueva opcion de menu
-    private String[][] matrizAuditoria = new String[5][2];
-    private int contadorAuditoria[] = new int[5];
+    private final String[][] matrizAuditoria = new String[5][2];
+    private final int contadorAuditoria[] = new int[5];
 
     public GUIManual() {
 
@@ -120,6 +124,10 @@ public class GUIManual extends JFrame {
 
         jPanelMenuNuevo = new JPanel();
         btnMenuNuevo = new JLabel();
+
+        //Elementos para mostrar información en los dash
+        table = new JTable();
+        panelDash = new JPanel();
 
         // Pinta el logo de la aplicación
         pintarLogo();
@@ -382,34 +390,40 @@ public class GUIManual extends JFrame {
      * información de los paneles
      */
     private void accionDashboardSel() {
-        dashSelecciones = new JPanel();
+        jLabelTop.setText("Dash Selecciones");
+        //Tipo de letra
         Font fontTitulos = new Font("Times New Roman", Font.BOLD, 16);
         Font font = new Font("Times New Roman", Font.BOLD, 14);
-        //Si no hay selecciones cargadas ir a cargar 
+
+        //Verificar si esta cargada la información
         if (selecciones == null) {
             jPanelMain.removeAll();
             JLabel notSelecciones = new JLabel();
             notSelecciones.setText("Cargue la información en selecciones para conocer más detalles \n\n");
             notSelecciones.setFont(font);
-            dashSelecciones.add(notSelecciones);
+            panelDash.add(notSelecciones);
         } else {
             //Creacion del panel
-            dashSelecciones.setLayout(new BoxLayout(dashSelecciones, BoxLayout.Y_AXIS));
-            dashSelecciones.setPreferredSize((new java.awt.Dimension(620, 410)));
-            dashSelecciones.setMaximumSize(jPanelRight.getSize());
+            panelDash.setLayout(new BoxLayout(panelDash, BoxLayout.Y_AXIS));
+            panelDash.setPreferredSize((new java.awt.Dimension(620, 410)));
+            panelDash.setMaximumSize(jPanelRight.getSize());
+
             //Creacion del menu
             JMenuBar menuBar = new JMenuBar();
             JMenu menu = new JMenu("Presione para conocer las opciones");
-            
+
+            //Creación de las opciones de menú
             JMenuItem menuItem1 = new JMenuItem("Total de selecciones cargadas");
             JMenuItem menuItem2 = new JMenuItem("Número de selecciones por continente");
             JMenuItem menuItem3 = new JMenuItem("Cantidad de nacionalidades diferentes de los directores técnicos");
             JMenuItem menuItem4 = new JMenuItem("Raking de nacionalidades de los directores técnicos");
+
             //Diseño de menu
-            menuItem1.setFont(fontTitulos);
-            menuItem2.setFont(fontTitulos);
-            menuItem3.setFont(fontTitulos);
-            menuItem4.setFont(fontTitulos);
+            menuItem1.setFont(font);
+            menuItem2.setFont(font);
+            menuItem3.setFont(font);
+            menuItem4.setFont(font);
+
             //Añadirlo al menu principal
             menu.add(menuItem1);
             menu.add(menuItem2);
@@ -420,25 +434,18 @@ public class GUIManual extends JFrame {
 
             //creacion de panel de menu
             JPanel form = new JPanel();
-            form.setLayout(new GridLayout(1, 1, 0, 0));
+            form.setLayout(new GridLayout(2, 1, 0, 0));
             form.add(menuBar);
-            dashSelecciones.add(form);
+            scrollPane = new JScrollPane(table);
+            panelDash.add(form);
+            panelDash.add(scrollPane);
 
-            jPanelMain.removeAll();
-            jPanelMain.add(dashSelecciones, BorderLayout.AFTER_LINE_ENDS);
-            jPanelMain.repaint();
-            jPanelMain.revalidate();
             //1. Total de selecciones cargadas
             menuItem1.addActionListener((ActionEvent e) -> {
-                System.out.println("Entro a total s");
                 totalSelecciones();
-                System.out.println("Paso a total s");
-                // dashSelecciones.removeAll();
-                dashSelecciones.repaint();
-                dashSelecciones.revalidate();
             });
 
-            /*//2. Numero de selecciones por continente
+            //2. Numero de selecciones por continente
             menuItem2.addActionListener((ActionEvent e) -> {
                 seleccionesContinente();
             });
@@ -451,13 +458,14 @@ public class GUIManual extends JFrame {
             //4. Raking de continentes de los directores técnicos
             menuItem4.addActionListener((ActionEvent e) -> {
                 rankingNacionalidades();
-            });*/
+            });
         }
 
-        /*jPanelMain.removeAll();
-        jPanelMain.add(dashSelecciones, BorderLayout.PAGE_START);
+        jPanelMain.removeAll();
+        jPanelMain.add(panelDash, BorderLayout.AFTER_LINE_ENDS);
         jPanelMain.repaint();
-        jPanelMain.revalidate();*/
+        jPanelMain.revalidate();
+
     }
 
     /**
@@ -496,23 +504,25 @@ public class GUIManual extends JFrame {
      * información de los paneles
      */
     private void accionDashboardRes() {
-        JPanel resultadosPanel = new JPanel();
+        jLabelTop.setText("Dash Resultados");
+        //Tipo de letra
         Font fontTitulos = new Font("Times New Roman", Font.BOLD, 16);
         Font font = new Font("Times New Roman", Font.BOLD, 14);
-        //Si no hay resultado cargados mandar a cargar 
+        //Verificar si esta cargada la información 
         if (resultados == null) {
             JLabel notResultados = new JLabel();
             notResultados.setText("Cargue la información en resultados para conocer más detalles \n\n");
             notResultados.setFont(font);
-            resultadosPanel.add(notResultados);
+            panelDash.add(notResultados);
         } else {
             //Creacion del panel
-            resultadosPanel.setLayout(new BoxLayout(resultadosPanel, BoxLayout.Y_AXIS));
-            resultadosPanel.setPreferredSize((new java.awt.Dimension(620, 410)));
-            resultadosPanel.setMaximumSize(jPanelRight.getPreferredSize());
+            panelDash.setLayout(new BoxLayout(panelDash, BoxLayout.Y_AXIS));
+            panelDash.setPreferredSize((new java.awt.Dimension(620, 410)));
+            panelDash.setMaximumSize(jPanelRight.getPreferredSize());
             //Creacion del menu
             JMenuBar menuBar = new JMenuBar();
             JMenu menu = new JMenu("Presione para conocer las opciones");
+            //Creacion de opciones de menu
             JMenuItem menuItem1 = new JMenuItem("Número de partidos cargados ");
             JMenuItem menuItem2 = new JMenuItem("Promedio de goles por partido");
             JMenuItem menuItem3 = new JMenuItem("Partido con más goles y partido con menos goles");
@@ -522,6 +532,7 @@ public class GUIManual extends JFrame {
             JMenuItem menuItem7 = new JMenuItem("Continente o continentes con más goles y menos goles");
             JMenuItem menuItem8 = new JMenuItem("Clasificados por cada grupo (Clasifican los dos primeros equipos de cada grupo)");
 
+            //Diseño de las opciones de menu
             menuItem1.setFont(font);
             menuItem2.setFont(font);
             menuItem3.setFont(font);
@@ -531,6 +542,7 @@ public class GUIManual extends JFrame {
             menuItem7.setFont(font);
             menuItem8.setFont(font);
 
+            //Añadir opciones al menu
             menu.add(menuItem1);
             menu.add(menuItem2);
             menu.add(menuItem3);
@@ -542,10 +554,13 @@ public class GUIManual extends JFrame {
             menu.setFont(fontTitulos);
             menuBar.add(menu);
 
+            //creacion de panel de menu
             JPanel form = new JPanel();
-            form.setLayout(new GridLayout(8, 1, 0, 0));
+            form.setLayout(new GridLayout(2, 1, 0, 0));
             form.add(menuBar);
-            resultadosPanel.add(form);
+            scrollPane = new JScrollPane(table);
+            panelDash.add(form);
+            panelDash.add(scrollPane);
 
             //1.Número de partidos cargados
             menuItem1.addActionListener((ActionEvent e) -> {
@@ -590,7 +605,7 @@ public class GUIManual extends JFrame {
         }
 
         jPanelMain.removeAll();
-        jPanelMain.add(resultadosPanel);
+        jPanelMain.add(panelDash, BorderLayout.AFTER_LINE_ENDS);
         jPanelMain.repaint();
         jPanelMain.revalidate();
 
@@ -1162,8 +1177,6 @@ public class GUIManual extends JFrame {
         String promedio[][] = {{String.valueOf(promedioGoles)}};
         String columnNames[] = {"Total de partidos cargados: "};
         mostrar(promedio, columnNames);
-        System.out.println("El promedio de goles por partido es: " + promedioGoles);
-
     }
 
     /**
@@ -1210,7 +1223,6 @@ public class GUIManual extends JFrame {
                 otroMin = true;
             }
 
-            // Almacenar los resultados en la matriz de String
             resultadosStr[i][0] = Integer.toString(i + 1); // Número del partido
             resultadosStr[i][1] = Integer.toString(totalGoles); // Cantidad de goles
         }
@@ -1221,7 +1233,6 @@ public class GUIManual extends JFrame {
                 int goles1 = Integer.parseInt(resultadosStr[j][1]);
                 int goles2 = Integer.parseInt(resultadosStr[j + 1][1]);
                 if (goles1 < goles2) {
-                    // intercambiar los elementos j y j+1
                     String[] temp = resultadosStr[j];
                     resultadosStr[j] = resultadosStr[j + 1];
                     resultadosStr[j + 1] = temp;
@@ -1495,13 +1506,17 @@ public class GUIManual extends JFrame {
     }
 
     private void mostrar(String[][] matriz, String[] columnNames) {
-        System.out.println("Entro a mostrar");
-        //Crear tabla
-        JTable table = new JTable(matriz, columnNames);
+        if (table == null) {
+            table = new JTable(matriz, columnNames);
+            scrollPane = new JScrollPane(table);
+            panelDash.add(scrollPane);
+        } else {
+            table.setModel(new DefaultTableModel(matriz, columnNames));
+        }
+        // Actualizar la interfaz gráfica
         table.setRowHeight(30);
-        JScrollPane scrollPane = new JScrollPane(table);
-        dashSelecciones.add(scrollPane);
-
+        panelDash.revalidate();
+        panelDash.repaint();
     }
 
     public static void main(String args[]) {
