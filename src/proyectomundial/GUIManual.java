@@ -982,9 +982,7 @@ public class GUIManual extends JFrame {
         int m = 0;
         String texto = StringUtils.stripAccents(field.getText().toLowerCase()); // Convertimos a minúsculas y eliminamos tildes
         if (!texto.isEmpty()) {
-            //Crear y obtener tamaño de matriz
             String[][] filtroSeleccion = new String[filas][columnas];
-            //Recorrer matriz y llenar nueva
             for (int i = 0; i < filas; i++) {
                 boolean contieneTexto = false;
                 for (int j = 0; j < columnas; j++) {
@@ -1034,10 +1032,7 @@ public class GUIManual extends JFrame {
     }
 
     /**
-     * Este metodo realiza el conteo de equipos por cada continente. La matriz
-     * donde almacena la informacion se va a encontrar de la siguiente manera
-     * 0:Europa 1: América del Sur 2: América del Norte 3: América Central 4:
-     * África 5: Asia 6: Oceanía
+     * Este metodo realiza el conteo de equipos por cada continente.
      *
      */
     private void seleccionesContinente() {
@@ -1059,7 +1054,7 @@ public class GUIManual extends JFrame {
             }
             if (!repetido) {
                 continentes[cantidadContinente] = continente;
-                resultado[cantidadContinente] = cantidadContinente + 1;
+                resultado[cantidadContinente]++;
                 cantidadContinente++;
             }
         }
@@ -1072,47 +1067,37 @@ public class GUIManual extends JFrame {
     }
 
     /**
-     * Este metodo obtiene la cantidad total de las diferentes continentes de
+     * Este metodo obtiene la cantidad total de las diferentes nacionalidades de
      * los directores tecnicos
      */
     private void cantidadNacionalidades() {
         String[] nacionalidades = new String[32];
-        int[] cantidadDirectoresPorNacionalidad = new int[32];
         int cantidad = 0;
-        String[] columnNames = {"Pais de origen", "Cantidad de directores técnicos"};
+        String[] columnNames = {"Cantidad de directores técnicos"};
 
-        for (String[] seleccione : selecciones) {
-            String nacionalidad = seleccione[4];
-            boolean repetido = false;
+        for (int i = 0; i < selecciones.length; i++) {
+            String nacionalidad = selecciones[i][4];
+            boolean repetida = false;
+
+            // Verificar si la nacionalidad ya se encuentra en el arreglo
             for (int j = 0; j < cantidad; j++) {
                 if (nacionalidades[j].equals(nacionalidad)) {
-                    cantidadDirectoresPorNacionalidad[j]++;
-                    repetido = true;
+                    repetida = true;
                     break;
                 }
             }
-            if (!repetido) {
+            if (!repetida) {
                 nacionalidades[cantidad] = nacionalidad;
-                cantidadDirectoresPorNacionalidad[cantidad] = 1;
                 cantidad++;
             }
         }
-
-        String[][] nacionalidadesCantidad = new String[cantidad + 1][2];
-        int totalDirectores = 0;
-        for (int i = 0; i < cantidad; i++) {
-            nacionalidadesCantidad[i][0] = nacionalidades[i];
-            nacionalidadesCantidad[i][1] = Integer.toString(cantidadDirectoresPorNacionalidad[i]);
-            totalDirectores = cantidad;
-        }
-        nacionalidadesCantidad[cantidad][0] = "Total";
-        nacionalidadesCantidad[cantidad][1] = Integer.toString(totalDirectores);
-
-        mostrar(nacionalidadesCantidad, columnNames);
+        String matriz[][] = {{String.valueOf(cantidad)}};
+        mostrar(matriz, columnNames);
     }
 
     /**
-     * Este metodo calcula el ranking de continentes de los directores tecnicos
+     * Este metodo calcula el ranking de los diferentes directores técnicos por
+     * continentes
      */
     private void rankingNacionalidades() {
         String[] nacionalidades = new String[32];
@@ -1158,6 +1143,9 @@ public class GUIManual extends JFrame {
         mostrar(rankingDeNacionalidad, columnNames);
     }
 
+    /**
+     * Este metodo obtiene el total de partidos de la matriz resultados
+     */
     private void numeroPartidos() {
         String cantidad = String.valueOf(resultados.length);
         String matriz[][] = {{cantidad}};
@@ -1177,10 +1165,9 @@ public class GUIManual extends JFrame {
             int golesVisitante = Integer.parseInt(resultados[i][6]);
             sumaGoles += golesLocal + golesVisitante;
         }
-
         double promedioGoles = (double) sumaGoles / numPartidos;
-        String promedio[][] = {{String.valueOf(promedioGoles)}};
-        String columnNames[] = {"Total de partidos cargados: "};
+        String promedio[][] = {{String.format("%.2f", promedioGoles)}};
+        String columnNames[] = {"Promedio de goles: "};
         mostrar(promedio, columnNames);
     }
 
@@ -1264,11 +1251,11 @@ public class GUIManual extends JFrame {
      * Cuenta el numero de partidos ganados y empatados en la matriz
      */
     private void contarGanadoresYEmpates() {
-        int numPartidos = resultados.length;
         int partidosGanados = 0;
         int partidosEmpatados = 0;
+        String[] columnNames = {"Partidos donde hubo ganador", "Partidos donde hubo empate"};
 
-        for (int i = 0; i < numPartidos; i++) {
+        for (int i = 0; i < resultados.length; i++) {
             int golesLocal = Integer.parseInt(resultados[i][5]);
             int golesVisitante = Integer.parseInt(resultados[i][6]);
 
@@ -1278,34 +1265,29 @@ public class GUIManual extends JFrame {
                 partidosEmpatados++;
             }
         }
-
-        System.out.println("El número de partidos ganados es: " + partidosGanados);
-        System.out.println("El número de partidos empatados es: " + partidosEmpatados);
+        String[][] resultadosStr = new String[1][2];
+        resultadosStr[0][0] = String.valueOf(partidosGanados);
+        resultadosStr[0][1] = String.valueOf(partidosEmpatados);
+        mostrar(resultadosStr, columnNames);
     }
 
     /**
-     * Encuentra el maximo y minimo de goles entre los equipos
+     * Encuentra el equipo con mas y con menos goles
      */
     private void maxMinGolesEquipos() {
-        int tamaño = resultados.length;
         int numEquipos = 32;
         String[] equipos = new String[numEquipos];
         int[] totalesGoles = new int[numEquipos];
+        String[] columnNames = {"Equipo con más goles", "Equipo con menos goles"};
+        String[][] resultadosStr = new String[1][2];
 
-        for (int i = 0; i < tamaño; i++) {
-            // nombres de los equipos
-            String local = resultados[i][1];
-            String visitante = resultados[i][2];
-
-            // goles de los equipos
-            int golesLocal = Integer.parseInt(resultados[i][5]);
-            int golesVisitante = Integer.parseInt(resultados[i][6]);
-
-            // encontramos los índices correspondientes en los arreglos
+        for (String[] resultado : resultados) {
+            String local = resultado[1];
+            String visitante = resultado[2];
+            int golesLocal = Integer.parseInt(resultado[5]);
+            int golesVisitante = Integer.parseInt(resultado[6]);
             int indiceLocal = encontrarIndicesMatriz(equipos, local);
             int indiceVisitante = encontrarIndicesMatriz(equipos, visitante);
-
-            // actualizamos los totales de goles correspondientes
             if (indiceLocal != -1) {
                 totalesGoles[indiceLocal] += golesLocal;
             }
@@ -1314,7 +1296,6 @@ public class GUIManual extends JFrame {
             }
         }
 
-        // encontramos los índices del equipo con más y menos goles
         int indiceEquipoMaxGoles = 0;
         int indiceEquipoMinGoles = 0;
         for (int i = 1; i < totalesGoles.length; i++) {
@@ -1325,22 +1306,23 @@ public class GUIManual extends JFrame {
                 indiceEquipoMinGoles = i;
             }
         }
+        resultadosStr[0][0] = String.valueOf(equipos[indiceEquipoMaxGoles]);
+        resultadosStr[0][1] = String.valueOf(equipos[indiceEquipoMinGoles]);
+        mostrar(resultadosStr, columnNames);
 
-        // imprimimos los nombres de los equipos correspondientes
-        System.out.println("Equipo con más goles: " + equipos[indiceEquipoMaxGoles]);
-        System.out.println("Equipo con menos goles: " + equipos[indiceEquipoMinGoles]);
     }
 
     /**
-     * Encuentra el maximo y minimo puntaje de los equipos
+     * Encuentra equipo con más y menos puntos
      */
     private void maxMinPuntosEquipos() {
-        int tamaño = resultados.length;
         int numEquipos = 32;
         String[] equipos = new String[numEquipos];
         int[] totalesPuntos = new int[numEquipos];
+        String[] columnNames = {"Selección con más puntos", "Seleccion con menos puntos"};
+        String[][] resultadosStr = new String[1][2];
 
-        for (int i = 0; i < tamaño; i++) {
+        for (int i = 0; i < resultados.length; i++) {
             // nombres de los equipos
             String local = resultados[i][1];
             String visitante = resultados[i][2];
@@ -1381,20 +1363,22 @@ public class GUIManual extends JFrame {
                 indiceEquipoMinPuntos = i;
             }
         }
-
-        // imprimimos los nombres de los equipos correspondientes
-        System.out.println("Equipo con más puntos: " + equipos[indiceEquipoMaxPuntos] + " (" + totalesPuntos[indiceEquipoMaxPuntos] + " puntos)");
-        System.out.println("Equipo con menos puntos: " + equipos[indiceEquipoMinPuntos] + " (" + totalesPuntos[indiceEquipoMinPuntos] + " puntos)");
+        resultadosStr[0][0] = String.valueOf(equipos[indiceEquipoMaxPuntos] + ": " + totalesPuntos[indiceEquipoMaxPuntos] + " puntos");
+        resultadosStr[0][1] = String.valueOf(equipos[indiceEquipoMinPuntos] + ": " + totalesPuntos[indiceEquipoMinPuntos] + " puntos");
+        mostrar(resultadosStr, columnNames);
     }
 
     /**
-     * Encuentra el numero de goles maximos y minimos por continentes
+     * Encuentra coontinentes donde los equipos realizaron la mayor o menor
+     * cantidad de goles
      */
     private void maxMinGolesContinentes() {
         int tamaño = resultados.length;
         int numContinentes = 6;
         String[] continentes = new String[numContinentes];
         int[] totalesGoles = new int[numContinentes];
+        String[] columnNames = {"Continente con más goles", "Continente con menos goles"};
+        String[][] resultadosStr = new String[1][2];
 
         for (int i = 0; i < tamaño; i++) {
             // continentes de los equipos
@@ -1425,10 +1409,9 @@ public class GUIManual extends JFrame {
                 indiceContinenteMinGoles = i;
             }
         }
-
-        // imprimimos los nombres de los continentes correspondientes
-        System.out.println("Continente con más goles: " + continentes[indiceContinenteMaxGoles]);
-        System.out.println("Continente con menos goles: " + continentes[indiceContinenteMinGoles]);
+        resultadosStr[0][0] = String.valueOf(continentes[indiceContinenteMaxGoles]);
+        resultadosStr[0][1] = String.valueOf(continentes[indiceContinenteMinGoles]);
+        mostrar(resultadosStr, columnNames);
     }
 
     /**
