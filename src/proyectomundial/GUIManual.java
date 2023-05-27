@@ -126,7 +126,6 @@ public class GUIManual extends JFrame {
         btnMenuNuevo = new JLabel();
 
         //Elementos para mostrar información en los dash
-        table = new JTable();
         panelDash = new JPanel();
 
         // Pinta el logo de la aplicación
@@ -394,10 +393,11 @@ public class GUIManual extends JFrame {
         //Tipo de letra
         Font fontTitulos = new Font("Times New Roman", Font.BOLD, 16);
         Font font = new Font("Times New Roman", Font.BOLD, 14);
-
+        //Refrescar
+        jPanelMain.removeAll();
+        panelDash.removeAll();
         //Verificar si esta cargada la información
         if (selecciones == null) {
-            jPanelMain.removeAll();
             JLabel notSelecciones = new JLabel();
             notSelecciones.setText("Cargue la información en selecciones para conocer más detalles \n\n");
             notSelecciones.setFont(font);
@@ -436,6 +436,7 @@ public class GUIManual extends JFrame {
             JPanel form = new JPanel();
             form.setLayout(new GridLayout(2, 1, 0, 0));
             form.add(menuBar);
+            table = new JTable();
             scrollPane = new JScrollPane(table);
             panelDash.add(form);
             panelDash.add(scrollPane);
@@ -508,6 +509,9 @@ public class GUIManual extends JFrame {
         //Tipo de letra
         Font fontTitulos = new Font("Times New Roman", Font.BOLD, 16);
         Font font = new Font("Times New Roman", Font.BOLD, 14);
+        //Refrescar
+        jPanelMain.removeAll();
+        panelDash.removeAll();
         //Verificar si esta cargada la información 
         if (resultados == null) {
             JLabel notResultados = new JLabel();
@@ -558,6 +562,7 @@ public class GUIManual extends JFrame {
             JPanel form = new JPanel();
             form.setLayout(new GridLayout(2, 1, 0, 0));
             form.add(menuBar);
+            table = new JTable();
             scrollPane = new JScrollPane(table);
             panelDash.add(form);
             panelDash.add(scrollPane);
