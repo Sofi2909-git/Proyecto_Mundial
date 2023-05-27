@@ -1176,7 +1176,7 @@ public class GUIManual extends JFrame {
      * señala en que partido fueron
      */
     private void maxMinGoles() {
-        //Variables de trabajo
+        // Variables de trabajo
         int numPartidos = resultados.length;
         int maxGoles = Integer.MIN_VALUE;
         int minGoles = Integer.MAX_VALUE;
@@ -1186,12 +1186,11 @@ public class GUIManual extends JFrame {
         int otroMinPartido = 0;
         boolean otroMax = false;
         boolean otroMin = false;
-        String[] columnNames = {"Numero del partido", "Cantidad de goles"};
+        String[] columnNames = {"Numero de partido", "Cantidad de goles"};
+        int cantidadMax = 1; // Inicialmente se asume que solo hay un partido con máximo goles
+        int cantidadMin = 1; // Inicialmente se asume que solo hay un partido con mínimo goles
 
-        // Crear matriz de String para almacenar los resultados
-        String[][] resultadosStr = new String[numPartidos][2];
-
-        //encontrar el max y min de goles por partido y almacenar los resultados en la matriz
+        // Encontrar el máximo y mínimo de goles por partido y determinar la cantidad de partidos máximos y mínimos
         for (int i = 0; i < numPartidos; i++) {
             int golesLocal = Integer.parseInt(resultados[i][5]);
             int golesVisitante = Integer.parseInt(resultados[i][6]);
@@ -1200,51 +1199,54 @@ public class GUIManual extends JFrame {
             if (totalGoles > maxGoles) {
                 maxGoles = totalGoles;
                 partidoMaxGoles = i;
+                cantidadMax = 1;
                 otroMax = false;
-            } else if (totalGoles == maxGoles && i != partidoMaxGoles && !otroMax) {
-                otroMaxPartido = i;
-                otroMax = true;
+            } else if (totalGoles == maxGoles) {
+                if (!otroMax) {
+                    otroMaxPartido = i;
+                    cantidadMax++;
+                    otroMax = true;
+                } else {
+                    cantidadMax++;
+                }
             }
 
             if (totalGoles < minGoles) {
                 minGoles = totalGoles;
                 partidoMinGoles = i;
+                cantidadMin = 1;
                 otroMin = false;
-            } else if (totalGoles == minGoles && i != partidoMinGoles && !otroMin) {
-                otroMinPartido = i;
-                otroMin = true;
-            }
-
-            resultadosStr[i][0] = Integer.toString(i + 1); // Número del partido
-            resultadosStr[i][1] = Integer.toString(totalGoles); // Cantidad de goles
-        }
-
-        // Ordenar la matriz de String según la cantidad de goles (de mayor a menor)
-        for (int i = 0; i < resultadosStr.length - 1; i++) {
-            for (int j = 0; j < resultadosStr.length - i - 1; j++) {
-                int goles1 = Integer.parseInt(resultadosStr[j][1]);
-                int goles2 = Integer.parseInt(resultadosStr[j + 1][1]);
-                if (goles1 < goles2) {
-                    String[] temp = resultadosStr[j];
-                    resultadosStr[j] = resultadosStr[j + 1];
-                    resultadosStr[j + 1] = temp;
+            } else if (totalGoles == minGoles) {
+                if (!otroMin) {
+                    otroMinPartido = i;
+                    cantidadMin++;
+                    otroMin = true;
+                } else {
+                    cantidadMin++;
                 }
             }
         }
 
+        // Crear matriz dinámica para almacenar los resultados
+        int cantidadTotal = cantidadMax + cantidadMin;
+        String[][] resultadosStr = new String[cantidadTotal][2];
+
+        // Llenar la matriz con la información de los partidos con máximo y mínimo goles
+        int index = 0;
+        for (int i = 0; i < numPartidos; i++) {
+            int golesLocal = Integer.parseInt(resultados[i][5]);
+            int golesVisitante = Integer.parseInt(resultados[i][6]);
+            int totalGoles = golesLocal + golesVisitante;
+
+            if (totalGoles == maxGoles || totalGoles == minGoles) {
+                resultadosStr[index][0] = Integer.toString(i + 1);
+                resultadosStr[index][1] = Integer.toString(totalGoles);
+                index++;
+            }
+        }
+
+        // Mostrar la información almacenada en resultadosStr utilizando el método mostrar
         mostrar(resultadosStr, columnNames);
-
-        System.out.println("El partido con más goles fue el #" + (partidoMaxGoles + 1) + " con " + maxGoles + " goles.");
-
-        if (otroMax) {
-            System.out.println("También el partido #" + (otroMaxPartido + 1) + " obtuvo un máximo de " + maxGoles + " goles.");
-        }
-
-        System.out.println("El partido con menos goles fue el #" + (partidoMinGoles + 1) + " con " + minGoles + " goles.");
-
-        if (otroMin) {
-            System.out.println("También el partido #" + (otroMinPartido + 1) + " obtuvo un minimo de " + minGoles + " goles.");
-        }
     }
 
     /**
@@ -1493,6 +1495,13 @@ public class GUIManual extends JFrame {
         System.out.println("Equipos clasificados del grupo " + grupo + ": " + (char) ('A' + clasificado1) + " y " + (char) ('A' + clasificado2));
     }
 
+    /**
+     * Muestra en las opciones del dash de selecciones y el dash de resultados
+     * la informacion de las opciones
+     *
+     * @param matriz
+     * @param columnNames
+     */
     private void mostrar(String[][] matriz, String[] columnNames) {
         if (table == null) {
             table = new JTable(matriz, columnNames);
