@@ -40,6 +40,9 @@ public class GUIManual extends JFrame {
     // Matriz que permite almacenar los resultado de los partidos cargardos
     public String[][] resultados = null;
 
+    //Matriz usada en la clasificacion de equipos
+    private String[] equipos = null;
+
     // Elementos de bara Lateral
     private JPanel jPanelLeft;
     private JPanel jPanelIconFIFA;
@@ -126,7 +129,6 @@ public class GUIManual extends JFrame {
         btnMenuNuevo = new JLabel();
 
         //Elementos para mostrar información en los dash
-        table = new JTable();
         panelDash = new JPanel();
 
         // Pinta el logo de la aplicación
@@ -394,10 +396,11 @@ public class GUIManual extends JFrame {
         //Tipo de letra
         Font fontTitulos = new Font("Times New Roman", Font.BOLD, 16);
         Font font = new Font("Times New Roman", Font.BOLD, 14);
-
+        //Refrescar
+        jPanelMain.removeAll();
+        panelDash.removeAll();
         //Verificar si esta cargada la información
         if (selecciones == null) {
-            jPanelMain.removeAll();
             JLabel notSelecciones = new JLabel();
             notSelecciones.setText("Cargue la información en selecciones para conocer más detalles \n\n");
             notSelecciones.setFont(font);
@@ -436,6 +439,7 @@ public class GUIManual extends JFrame {
             JPanel form = new JPanel();
             form.setLayout(new GridLayout(2, 1, 0, 0));
             form.add(menuBar);
+            table = new JTable();
             scrollPane = new JScrollPane(table);
             panelDash.add(form);
             panelDash.add(scrollPane);
@@ -508,6 +512,9 @@ public class GUIManual extends JFrame {
         //Tipo de letra
         Font fontTitulos = new Font("Times New Roman", Font.BOLD, 16);
         Font font = new Font("Times New Roman", Font.BOLD, 14);
+        //Refrescar
+        jPanelMain.removeAll();
+        panelDash.removeAll();
         //Verificar si esta cargada la información 
         if (resultados == null) {
             JLabel notResultados = new JLabel();
@@ -558,6 +565,7 @@ public class GUIManual extends JFrame {
             JPanel form = new JPanel();
             form.setLayout(new GridLayout(2, 1, 0, 0));
             form.add(menuBar);
+            table = new JTable();
             scrollPane = new JScrollPane(table);
             panelDash.add(form);
             panelDash.add(scrollPane);
@@ -977,9 +985,7 @@ public class GUIManual extends JFrame {
         int m = 0;
         String texto = StringUtils.stripAccents(field.getText().toLowerCase()); // Convertimos a minúsculas y eliminamos tildes
         if (!texto.isEmpty()) {
-            //Crear y obtener tamaño de matriz
             String[][] filtroSeleccion = new String[filas][columnas];
-            //Recorrer matriz y llenar nueva
             for (int i = 0; i < filas; i++) {
                 boolean contieneTexto = false;
                 for (int j = 0; j < columnas; j++) {
@@ -1029,10 +1035,7 @@ public class GUIManual extends JFrame {
     }
 
     /**
-     * Este metodo realiza el conteo de equipos por cada continente. La matriz
-     * donde almacena la informacion se va a encontrar de la siguiente manera
-     * 0:Europa 1: América del Sur 2: América del Norte 3: América Central 4:
-     * África 5: Asia 6: Oceanía
+     * Este metodo realiza el conteo de equipos por cada continente.
      *
      */
     private void seleccionesContinente() {
@@ -1054,7 +1057,7 @@ public class GUIManual extends JFrame {
             }
             if (!repetido) {
                 continentes[cantidadContinente] = continente;
-                resultado[cantidadContinente] = cantidadContinente + 1;
+                resultado[cantidadContinente]++;
                 cantidadContinente++;
             }
         }
@@ -1067,53 +1070,43 @@ public class GUIManual extends JFrame {
     }
 
     /**
-     * Este metodo obtiene la cantidad total de las diferentes continentes de
+     * Este metodo obtiene la cantidad total de las diferentes nacionalidades de
      * los directores tecnicos
      */
     private void cantidadNacionalidades() {
         String[] nacionalidades = new String[32];
-        int[] cantidadDirectoresPorNacionalidad = new int[32];
         int cantidad = 0;
-        String[] columnNames = {"Pais de origen", "Cantidad de directores técnicos"};
+        String[] columnNames = {"Cantidad de diferentes directores técnicos"};
 
-        for (String[] seleccione : selecciones) {
-            String nacionalidad = seleccione[4];
-            boolean repetido = false;
+        for (int i = 0; i < selecciones.length; i++) {
+            String nacionalidad = selecciones[i][4];
+            boolean repetida = false;
+
+            // Verificar si la nacionalidad ya se encuentra en el arreglo
             for (int j = 0; j < cantidad; j++) {
                 if (nacionalidades[j].equals(nacionalidad)) {
-                    cantidadDirectoresPorNacionalidad[j]++;
-                    repetido = true;
+                    repetida = true;
                     break;
                 }
             }
-            if (!repetido) {
+            if (!repetida) {
                 nacionalidades[cantidad] = nacionalidad;
-                cantidadDirectoresPorNacionalidad[cantidad] = 1;
                 cantidad++;
             }
         }
-
-        String[][] nacionalidadesCantidad = new String[cantidad + 1][2];
-        int totalDirectores = 0;
-        for (int i = 0; i < cantidad; i++) {
-            nacionalidadesCantidad[i][0] = nacionalidades[i];
-            nacionalidadesCantidad[i][1] = Integer.toString(cantidadDirectoresPorNacionalidad[i]);
-            totalDirectores = cantidad;
-        }
-        nacionalidadesCantidad[cantidad][0] = "Total";
-        nacionalidadesCantidad[cantidad][1] = Integer.toString(totalDirectores);
-
-        mostrar(nacionalidadesCantidad, columnNames);
+        String matriz[][] = {{String.valueOf(cantidad)}};
+        mostrar(matriz, columnNames);
     }
 
     /**
-     * Este metodo calcula el ranking de continentes de los directores tecnicos
+     * Este metodo calcula el ranking de los diferentes directores técnicos por
+     * continentes
      */
     private void rankingNacionalidades() {
         String[] nacionalidades = new String[32];
         int[] cantidades = new int[32];
         int cantidadNacionalidadesDiferentes = 0;
-        String[] columnNames = {"Continente de origen", "Ranking de directores técnicos"};
+        String[] columnNames = {"Continente de origen", "Número de directores técnicos"};
 
         for (String[] seleccione : selecciones) {
             String nacionalidad = seleccione[4];
@@ -1153,6 +1146,9 @@ public class GUIManual extends JFrame {
         mostrar(rankingDeNacionalidad, columnNames);
     }
 
+    /**
+     * Este metodo obtiene el total de partidos de la matriz resultados
+     */
     private void numeroPartidos() {
         String cantidad = String.valueOf(resultados.length);
         String matriz[][] = {{cantidad}};
@@ -1172,10 +1168,9 @@ public class GUIManual extends JFrame {
             int golesVisitante = Integer.parseInt(resultados[i][6]);
             sumaGoles += golesLocal + golesVisitante;
         }
-
         double promedioGoles = (double) sumaGoles / numPartidos;
-        String promedio[][] = {{String.valueOf(promedioGoles)}};
-        String columnNames[] = {"Total de partidos cargados: "};
+        String promedio[][] = {{String.format("%.2f", promedioGoles)}};
+        String columnNames[] = {"Promedio de goles: "};
         mostrar(promedio, columnNames);
     }
 
@@ -1184,7 +1179,7 @@ public class GUIManual extends JFrame {
      * señala en que partido fueron
      */
     private void maxMinGoles() {
-        //Variables de trabajo
+        // Variables de trabajo
         int numPartidos = resultados.length;
         int maxGoles = Integer.MIN_VALUE;
         int minGoles = Integer.MAX_VALUE;
@@ -1194,12 +1189,11 @@ public class GUIManual extends JFrame {
         int otroMinPartido = 0;
         boolean otroMax = false;
         boolean otroMin = false;
-        String[] columnNames = {"Numero del partido", "Cantidad de goles"};
+        String[] columnNames = {"Numero de partido", "Cantidad de goles"};
+        int cantidadMax = 1; // Inicialmente se asume que solo hay un partido con máximo goles
+        int cantidadMin = 1; // Inicialmente se asume que solo hay un partido con mínimo goles
 
-        // Crear matriz de String para almacenar los resultados
-        String[][] resultadosStr = new String[numPartidos][2];
-
-        //encontrar el max y min de goles por partido y almacenar los resultados en la matriz
+        // Encontrar el máximo y mínimo de goles por partido y determinar la cantidad de partidos máximos y mínimos
         for (int i = 0; i < numPartidos; i++) {
             int golesLocal = Integer.parseInt(resultados[i][5]);
             int golesVisitante = Integer.parseInt(resultados[i][6]);
@@ -1208,62 +1202,65 @@ public class GUIManual extends JFrame {
             if (totalGoles > maxGoles) {
                 maxGoles = totalGoles;
                 partidoMaxGoles = i;
+                cantidadMax = 1;
                 otroMax = false;
-            } else if (totalGoles == maxGoles && i != partidoMaxGoles && !otroMax) {
-                otroMaxPartido = i;
-                otroMax = true;
+            } else if (totalGoles == maxGoles) {
+                if (!otroMax) {
+                    otroMaxPartido = i;
+                    cantidadMax++;
+                    otroMax = true;
+                } else {
+                    cantidadMax++;
+                }
             }
 
             if (totalGoles < minGoles) {
                 minGoles = totalGoles;
                 partidoMinGoles = i;
+                cantidadMin = 1;
                 otroMin = false;
-            } else if (totalGoles == minGoles && i != partidoMinGoles && !otroMin) {
-                otroMinPartido = i;
-                otroMin = true;
-            }
-
-            resultadosStr[i][0] = Integer.toString(i + 1); // Número del partido
-            resultadosStr[i][1] = Integer.toString(totalGoles); // Cantidad de goles
-        }
-
-        // Ordenar la matriz de String según la cantidad de goles (de mayor a menor)
-        for (int i = 0; i < resultadosStr.length - 1; i++) {
-            for (int j = 0; j < resultadosStr.length - i - 1; j++) {
-                int goles1 = Integer.parseInt(resultadosStr[j][1]);
-                int goles2 = Integer.parseInt(resultadosStr[j + 1][1]);
-                if (goles1 < goles2) {
-                    String[] temp = resultadosStr[j];
-                    resultadosStr[j] = resultadosStr[j + 1];
-                    resultadosStr[j + 1] = temp;
+            } else if (totalGoles == minGoles) {
+                if (!otroMin) {
+                    otroMinPartido = i;
+                    cantidadMin++;
+                    otroMin = true;
+                } else {
+                    cantidadMin++;
                 }
             }
         }
 
+        // Crear matriz dinámica para almacenar los resultados
+        int cantidadTotal = cantidadMax + cantidadMin;
+        String[][] resultadosStr = new String[cantidadTotal][2];
+
+        // Llenar la matriz con la información de los partidos con máximo y mínimo goles
+        int index = 0;
+        for (int i = 0; i < numPartidos; i++) {
+            int golesLocal = Integer.parseInt(resultados[i][5]);
+            int golesVisitante = Integer.parseInt(resultados[i][6]);
+            int totalGoles = golesLocal + golesVisitante;
+
+            if (totalGoles == maxGoles || totalGoles == minGoles) {
+                resultadosStr[index][0] = Integer.toString(i + 1);
+                resultadosStr[index][1] = Integer.toString(totalGoles);
+                index++;
+            }
+        }
+
+        // Mostrar la información almacenada en resultadosStr utilizando el método mostrar
         mostrar(resultadosStr, columnNames);
-
-        System.out.println("El partido con más goles fue el #" + (partidoMaxGoles + 1) + " con " + maxGoles + " goles.");
-
-        if (otroMax) {
-            System.out.println("También el partido #" + (otroMaxPartido + 1) + " obtuvo un máximo de " + maxGoles + " goles.");
-        }
-
-        System.out.println("El partido con menos goles fue el #" + (partidoMinGoles + 1) + " con " + minGoles + " goles.");
-
-        if (otroMin) {
-            System.out.println("También el partido #" + (otroMinPartido + 1) + " obtuvo un minimo de " + minGoles + " goles.");
-        }
     }
 
     /**
      * Cuenta el numero de partidos ganados y empatados en la matriz
      */
     private void contarGanadoresYEmpates() {
-        int numPartidos = resultados.length;
         int partidosGanados = 0;
         int partidosEmpatados = 0;
+        String[] columnNames = {"Partidos donde hubo ganador", "Partidos donde hubo empate"};
 
-        for (int i = 0; i < numPartidos; i++) {
+        for (int i = 0; i < resultados.length; i++) {
             int golesLocal = Integer.parseInt(resultados[i][5]);
             int golesVisitante = Integer.parseInt(resultados[i][6]);
 
@@ -1273,34 +1270,29 @@ public class GUIManual extends JFrame {
                 partidosEmpatados++;
             }
         }
-
-        System.out.println("El número de partidos ganados es: " + partidosGanados);
-        System.out.println("El número de partidos empatados es: " + partidosEmpatados);
+        String[][] resultadosStr = new String[1][2];
+        resultadosStr[0][0] = String.valueOf(partidosGanados);
+        resultadosStr[0][1] = String.valueOf(partidosEmpatados);
+        mostrar(resultadosStr, columnNames);
     }
 
     /**
-     * Encuentra el maximo y minimo de goles entre los equipos
+     * Encuentra el equipo con mas y con menos goles
      */
     private void maxMinGolesEquipos() {
-        int tamaño = resultados.length;
         int numEquipos = 32;
         String[] equipos = new String[numEquipos];
         int[] totalesGoles = new int[numEquipos];
+        String[] columnNames = {"Equipo con más goles", "Equipo con menos goles"};
+        String[][] resultadosStr = new String[1][2];
 
-        for (int i = 0; i < tamaño; i++) {
-            // nombres de los equipos
-            String local = resultados[i][1];
-            String visitante = resultados[i][2];
-
-            // goles de los equipos
-            int golesLocal = Integer.parseInt(resultados[i][5]);
-            int golesVisitante = Integer.parseInt(resultados[i][6]);
-
-            // encontramos los índices correspondientes en los arreglos
+        for (String[] resultado : resultados) {
+            String local = resultado[1];
+            String visitante = resultado[2];
+            int golesLocal = Integer.parseInt(resultado[5]);
+            int golesVisitante = Integer.parseInt(resultado[6]);
             int indiceLocal = encontrarIndicesMatriz(equipos, local);
             int indiceVisitante = encontrarIndicesMatriz(equipos, visitante);
-
-            // actualizamos los totales de goles correspondientes
             if (indiceLocal != -1) {
                 totalesGoles[indiceLocal] += golesLocal;
             }
@@ -1309,7 +1301,6 @@ public class GUIManual extends JFrame {
             }
         }
 
-        // encontramos los índices del equipo con más y menos goles
         int indiceEquipoMaxGoles = 0;
         int indiceEquipoMinGoles = 0;
         for (int i = 1; i < totalesGoles.length; i++) {
@@ -1320,22 +1311,23 @@ public class GUIManual extends JFrame {
                 indiceEquipoMinGoles = i;
             }
         }
+        resultadosStr[0][0] = String.valueOf(equipos[indiceEquipoMaxGoles]);
+        resultadosStr[0][1] = String.valueOf(equipos[indiceEquipoMinGoles]);
+        mostrar(resultadosStr, columnNames);
 
-        // imprimimos los nombres de los equipos correspondientes
-        System.out.println("Equipo con más goles: " + equipos[indiceEquipoMaxGoles]);
-        System.out.println("Equipo con menos goles: " + equipos[indiceEquipoMinGoles]);
     }
 
     /**
-     * Encuentra el maximo y minimo puntaje de los equipos
+     * Encuentra equipo con más y menos puntos
      */
     private void maxMinPuntosEquipos() {
-        int tamaño = resultados.length;
         int numEquipos = 32;
         String[] equipos = new String[numEquipos];
         int[] totalesPuntos = new int[numEquipos];
+        String[] columnNames = {"Selección con más puntos", "Seleccion con menos puntos"};
+        String[][] resultadosStr = new String[1][2];
 
-        for (int i = 0; i < tamaño; i++) {
+        for (int i = 0; i < resultados.length; i++) {
             // nombres de los equipos
             String local = resultados[i][1];
             String visitante = resultados[i][2];
@@ -1376,20 +1368,22 @@ public class GUIManual extends JFrame {
                 indiceEquipoMinPuntos = i;
             }
         }
-
-        // imprimimos los nombres de los equipos correspondientes
-        System.out.println("Equipo con más puntos: " + equipos[indiceEquipoMaxPuntos] + " (" + totalesPuntos[indiceEquipoMaxPuntos] + " puntos)");
-        System.out.println("Equipo con menos puntos: " + equipos[indiceEquipoMinPuntos] + " (" + totalesPuntos[indiceEquipoMinPuntos] + " puntos)");
+        resultadosStr[0][0] = String.valueOf(equipos[indiceEquipoMaxPuntos] + ": " + totalesPuntos[indiceEquipoMaxPuntos] + " puntos");
+        resultadosStr[0][1] = String.valueOf(equipos[indiceEquipoMinPuntos] + ": " + totalesPuntos[indiceEquipoMinPuntos] + " puntos");
+        mostrar(resultadosStr, columnNames);
     }
 
     /**
-     * Encuentra el numero de goles maximos y minimos por continentes
+     * Encuentra coontinentes donde los equipos realizaron la mayor o menor
+     * cantidad de goles
      */
     private void maxMinGolesContinentes() {
         int tamaño = resultados.length;
         int numContinentes = 6;
         String[] continentes = new String[numContinentes];
         int[] totalesGoles = new int[numContinentes];
+        String[] columnNames = {"Continente con más goles", "Continente con menos goles"};
+        String[][] resultadosStr = new String[1][2];
 
         for (int i = 0; i < tamaño; i++) {
             // continentes de los equipos
@@ -1420,10 +1414,9 @@ public class GUIManual extends JFrame {
                 indiceContinenteMinGoles = i;
             }
         }
-
-        // imprimimos los nombres de los continentes correspondientes
-        System.out.println("Continente con más goles: " + continentes[indiceContinenteMaxGoles]);
-        System.out.println("Continente con menos goles: " + continentes[indiceContinenteMinGoles]);
+        resultadosStr[0][0] = String.valueOf(continentes[indiceContinenteMaxGoles]);
+        resultadosStr[0][1] = String.valueOf(continentes[indiceContinenteMinGoles]);
+        mostrar(resultadosStr, columnNames);
     }
 
     /**
@@ -1446,26 +1439,87 @@ public class GUIManual extends JFrame {
         return -1;
     }
 
+    /**
+     * Metodo que inicia la clasificacion de los grupos
+     */
     private void clasificarPorGrupo() {
+        obtenerEquipos();
         String grupoActual = resultados[0][0];
         int cont = 1;
+
+        // Crear la matriz para almacenar los resultados de los equipos clasificados
+        String[][] resultadosStr = new String[8][3];
 
         for (String[] resultado : resultados) {
             String grupo = resultado[0];
             if (!grupo.equals(grupoActual)) {
-                clasificarEquipos(grupoActual);
+                clasificarEquipos(grupoActual, resultadosStr);
                 grupoActual = grupo;
                 cont = 1;
             }
             cont++;
         }
 
-        clasificarEquipos(grupoActual);
+        clasificarEquipos(grupoActual, resultadosStr);
+
+        // Mostrar los resultados
+        String[] columnNames = {"Grupo", "Equipo clasificado 1", "Equipo clasificado 2"};
+        mostrar(resultadosStr, columnNames);
     }
 
-    private void clasificarEquipos(String grupo) {
+    /**
+     * Obtiene el nombre de los equipos de cada grupo
+     */
+    private void obtenerEquipos() {
+        String[] equiposTemp = new String[32];
+
+        int index = 0;
+        for (String[] resultado : resultados) {
+            String equipo1 = resultado[1];
+            String equipo2 = resultado[2];
+
+            // Verificar si el equipo1 no se encuentra ya en el arreglo
+            boolean equipo1Exist = false;
+            for (int i = 0; i < index; i++) {
+                if (equiposTemp[i].equals(equipo1)) {
+                    equipo1Exist = true;
+                    break;
+                }
+            }
+
+            // Si no se encuentra, agregarlo al arreglo
+            if (!equipo1Exist) {
+                equiposTemp[index++] = equipo1;
+            }
+
+            // Verificar si el equipo2 no se encuentra ya en el arreglo
+            boolean equipo2Exist = false;
+            for (int i = 0; i < index; i++) {
+                if (equiposTemp[i].equals(equipo2)) {
+                    equipo2Exist = true;
+                    break;
+                }
+            }
+
+            // Si no se encuentra, agregarlo al arreglo
+            if (!equipo2Exist) {
+                equiposTemp[index++] = equipo2;
+            }
+        }
+
+        // Crear el arreglo final de equipos sin elementos nulos
+        equipos = new String[index];
+        System.arraycopy(equiposTemp, 0, equipos, 0, index);
+    }
+
+    /**
+     * Clasifica los equipos de acuerdo a las reglas establecidas por la FIFA
+     *
+     * @param grupo
+     */
+    private void clasificarEquipos(String grupo, String[][] resultadosStr) {
         // Creamos un vector para almacenar los puntos de cada equipo en el grupo
-        int[] puntos = new int[32];
+        int[] puntos = new int[equipos.length];
 
         for (String[] resultado : resultados) {
             if (resultado[0].equals(grupo)) {
@@ -1475,17 +1529,15 @@ public class GUIManual extends JFrame {
                 int goles2 = Integer.parseInt(resultado[6]);
                 // Actualizamos los puntos de cada equipo en el grupo
                 if (goles1 > goles2) {
-                    puntos[equipo1.charAt(0) - 'A'] += 3;
+                    puntos[getIndex(equipo1)] += 3;
                 } else if (goles1 < goles2) {
-                    puntos[equipo2.charAt(0) - 'A'] += 3;
+                    puntos[getIndex(equipo2)] += 3;
                 } else {
-                    puntos[equipo1.charAt(0) - 'A'] += 1;
-                    puntos[equipo2.charAt(0) - 'A'] += 1;
+                    puntos[getIndex(equipo1)] += 1;
+                    puntos[getIndex(equipo2)] += 1;
                 }
             }
         }
-        System.out.println("Puntos " + Arrays.toString(puntos));
-
         // Obtenemos los equipos clasificados
         int max1 = -1, max2 = -1, clasificado1 = -1, clasificado2 = -1;
         for (int i = 0; i < puntos.length; i++) {
@@ -1493,18 +1545,70 @@ public class GUIManual extends JFrame {
                 max2 = max1;
                 clasificado2 = clasificado1;
                 max1 = puntos[i];
-                System.out.println(max1);
                 clasificado1 = i;
             } else if (puntos[i] > max2) {
                 max2 = puntos[i];
                 clasificado2 = i;
             }
         }
+        String equipoClasificado1 = getNombreEquipo(clasificado1);
+        String equipoClasificado2 = getNombreEquipo(clasificado2);
 
-        // Imprimimos los equipos clasificados
-        System.out.println("Equipos clasificados del grupo " + grupo + ": " + (char) ('A' + clasificado1) + " y " + (char) ('A' + clasificado2));
+        // Almacenamos la información en la matriz resultadosStr
+        int fila = getIndexGrupo(grupo, resultadosStr);
+        resultadosStr[fila][0] = grupo;
+        resultadosStr[fila][1] = equipoClasificado1;
+        resultadosStr[fila][2] = equipoClasificado2;
     }
 
+    /**
+     * Obtiene el indice en el arreglo de equipos para conocer el nombre
+     *
+     * @param equipo
+     * @return
+     */
+    private int getIndex(String equipo) {
+        for (int i = 0; i < equipos.length; i++) {
+            if (equipos[i].equals(equipo)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Obtiene la fila para almacenar informacion de acuerdo a los grupos
+     *
+     * @param grupo
+     * @param resultadosStr
+     * @return
+     */
+    private int getIndexGrupo(String grupo, String[][] resultadosStr) {
+        for (int i = 0; i < resultadosStr.length; i++) {
+            if (resultadosStr[i][0] == null || resultadosStr[i][0].equals(grupo)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Obtenemos el nombre completo del equipo en base a su índice
+     *
+     * @param index
+     * @return
+     */
+    private String getNombreEquipo(int index) {
+        return equipos[index];
+    }
+
+    /**
+     * Muestra en las opciones del dash de selecciones y el dash de resultados
+     * la informacion de las opciones
+     *
+     * @param matriz
+     * @param columnNames
+     */
     private void mostrar(String[][] matriz, String[] columnNames) {
         if (table == null) {
             table = new JTable(matriz, columnNames);
