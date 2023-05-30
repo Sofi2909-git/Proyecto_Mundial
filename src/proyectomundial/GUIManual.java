@@ -40,6 +40,9 @@ public class GUIManual extends JFrame {
     // Matriz que permite almacenar los resultado de los partidos cargardos
     public String[][] resultados = null;
 
+    //Matriz usada en la clasificacion de equipos
+    private String[] equipos = null;
+
     // Elementos de bara Lateral
     private JPanel jPanelLeft;
     private JPanel jPanelIconFIFA;
@@ -1073,7 +1076,7 @@ public class GUIManual extends JFrame {
     private void cantidadNacionalidades() {
         String[] nacionalidades = new String[32];
         int cantidad = 0;
-        String[] columnNames = {"Cantidad de directores técnicos"};
+        String[] columnNames = {"Cantidad de diferentes directores técnicos"};
 
         for (int i = 0; i < selecciones.length; i++) {
             String nacionalidad = selecciones[i][4];
@@ -1103,7 +1106,7 @@ public class GUIManual extends JFrame {
         String[] nacionalidades = new String[32];
         int[] cantidades = new int[32];
         int cantidadNacionalidadesDiferentes = 0;
-        String[] columnNames = {"Continente de origen", "Ranking de directores técnicos"};
+        String[] columnNames = {"Continente de origen", "Número de directores técnicos"};
 
         for (String[] seleccione : selecciones) {
             String nacionalidad = seleccione[4];
@@ -1436,7 +1439,11 @@ public class GUIManual extends JFrame {
         return -1;
     }
 
+    /**
+     * Metodo que inicia la clasificacion de los grupos
+     */
     private void clasificarPorGrupo() {
+        obtenerEquipos();
         String grupoActual = resultados[0][0];
         int cont = 1;
 
@@ -1453,9 +1460,59 @@ public class GUIManual extends JFrame {
         clasificarEquipos(grupoActual);
     }
 
+    /**
+     * Obtiene el nombre de los equipos de cada grupo
+     */
+    private void obtenerEquipos() {
+        String[] equiposTemp = new String[32];
+
+        int index = 0;
+        for (String[] resultado : resultados) {
+            String equipo1 = resultado[1];
+            String equipo2 = resultado[2];
+
+            // Verificar si el equipo1 no se encuentra ya en el arreglo
+            boolean equipo1Exist = false;
+            for (int i = 0; i < index; i++) {
+                if (equiposTemp[i].equals(equipo1)) {
+                    equipo1Exist = true;
+                    break;
+                }
+            }
+
+            // Si no se encuentra, agregarlo al arreglo
+            if (!equipo1Exist) {
+                equiposTemp[index++] = equipo1;
+            }
+
+            // Verificar si el equipo2 no se encuentra ya en el arreglo
+            boolean equipo2Exist = false;
+            for (int i = 0; i < index; i++) {
+                if (equiposTemp[i].equals(equipo2)) {
+                    equipo2Exist = true;
+                    break;
+                }
+            }
+
+            // Si no se encuentra, agregarlo al arreglo
+            if (!equipo2Exist) {
+                equiposTemp[index++] = equipo2;
+            }
+        }
+
+        // Crear el arreglo final de equipos sin elementos nulos
+        equipos = new String[index];
+        System.arraycopy(equiposTemp, 0, equipos, 0, index);
+    }
+
+    /**
+     * Clasifica los equipos de acuerdo a las reglas establecidas por la FIFA
+     *
+     * @param grupo
+     */
     private void clasificarEquipos(String grupo) {
         // Creamos un vector para almacenar los puntos de cada equipo en el grupo
-        int[] puntos = new int[32];
+        int[] puntos = new int[equipos.length];
 
         for (String[] resultado : resultados) {
             if (resultado[0].equals(grupo)) {
@@ -1465,17 +1522,15 @@ public class GUIManual extends JFrame {
                 int goles2 = Integer.parseInt(resultado[6]);
                 // Actualizamos los puntos de cada equipo en el grupo
                 if (goles1 > goles2) {
-                    puntos[equipo1.charAt(0) - 'A'] += 3;
+                    puntos[getIndex(equipo1)] += 3;
                 } else if (goles1 < goles2) {
-                    puntos[equipo2.charAt(0) - 'A'] += 3;
+                    puntos[getIndex(equipo2)] += 3;
                 } else {
-                    puntos[equipo1.charAt(0) - 'A'] += 1;
-                    puntos[equipo2.charAt(0) - 'A'] += 1;
+                    puntos[getIndex(equipo1)] += 1;
+                    puntos[getIndex(equipo2)] += 1;
                 }
             }
         }
-        System.out.println("Puntos " + Arrays.toString(puntos));
-
         // Obtenemos los equipos clasificados
         int max1 = -1, max2 = -1, clasificado1 = -1, clasificado2 = -1;
         for (int i = 0; i < puntos.length; i++) {
@@ -1483,16 +1538,42 @@ public class GUIManual extends JFrame {
                 max2 = max1;
                 clasificado2 = clasificado1;
                 max1 = puntos[i];
-                System.out.println(max1);
                 clasificado1 = i;
             } else if (puntos[i] > max2) {
                 max2 = puntos[i];
                 clasificado2 = i;
             }
         }
+        String equipoClasificado1 = getNombreEquipo(clasificado1);
+        String equipoClasificado2 = getNombreEquipo(clasificado2);
 
         // Imprimimos los equipos clasificados
-        System.out.println("Equipos clasificados del grupo " + grupo + ": " + (char) ('A' + clasificado1) + " y " + (char) ('A' + clasificado2));
+        System.out.println("Equipos clasificados del grupo " + grupo + ": " + equipoClasificado1 + " y " + equipoClasificado2);
+    }
+
+    /**
+     * Obtiene el indice en el arreglo de equipos para conocer el nombre
+     *
+     * @param equipo
+     * @return
+     */
+    private int getIndex(String equipo) {
+        for (int i = 0; i < equipos.length; i++) {
+            if (equipos[i].equals(equipo)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Obtenemos el nombre completo del equipo en base a su índice
+     *
+     * @param index
+     * @return
+     */
+    private String getNombreEquipo(int index) {
+        return equipos[index];
     }
 
     /**
