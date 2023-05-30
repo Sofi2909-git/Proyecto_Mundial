@@ -1447,17 +1447,24 @@ public class GUIManual extends JFrame {
         String grupoActual = resultados[0][0];
         int cont = 1;
 
+        // Crear la matriz para almacenar los resultados de los equipos clasificados
+        String[][] resultadosStr = new String[8][3];
+
         for (String[] resultado : resultados) {
             String grupo = resultado[0];
             if (!grupo.equals(grupoActual)) {
-                clasificarEquipos(grupoActual);
+                clasificarEquipos(grupoActual, resultadosStr);
                 grupoActual = grupo;
                 cont = 1;
             }
             cont++;
         }
 
-        clasificarEquipos(grupoActual);
+        clasificarEquipos(grupoActual, resultadosStr);
+
+        // Mostrar los resultados
+        String[] columnNames = {"Grupo", "Equipo clasificado 1", "Equipo clasificado 2"};
+        mostrar(resultadosStr, columnNames);
     }
 
     /**
@@ -1510,7 +1517,7 @@ public class GUIManual extends JFrame {
      *
      * @param grupo
      */
-    private void clasificarEquipos(String grupo) {
+    private void clasificarEquipos(String grupo, String[][] resultadosStr) {
         // Creamos un vector para almacenar los puntos de cada equipo en el grupo
         int[] puntos = new int[equipos.length];
 
@@ -1547,8 +1554,11 @@ public class GUIManual extends JFrame {
         String equipoClasificado1 = getNombreEquipo(clasificado1);
         String equipoClasificado2 = getNombreEquipo(clasificado2);
 
-        // Imprimimos los equipos clasificados
-        System.out.println("Equipos clasificados del grupo " + grupo + ": " + equipoClasificado1 + " y " + equipoClasificado2);
+        // Almacenamos la información en la matriz resultadosStr
+        int fila = getIndexGrupo(grupo, resultadosStr);
+        resultadosStr[fila][0] = grupo;
+        resultadosStr[fila][1] = equipoClasificado1;
+        resultadosStr[fila][2] = equipoClasificado2;
     }
 
     /**
@@ -1560,6 +1570,22 @@ public class GUIManual extends JFrame {
     private int getIndex(String equipo) {
         for (int i = 0; i < equipos.length; i++) {
             if (equipos[i].equals(equipo)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Obtiene la fila para almacenar informacion de acuerdo a los grupos
+     *
+     * @param grupo
+     * @param resultadosStr
+     * @return
+     */
+    private int getIndexGrupo(String grupo, String[][] resultadosStr) {
+        for (int i = 0; i < resultadosStr.length; i++) {
+            if (resultadosStr[i][0] == null || resultadosStr[i][0].equals(grupo)) {
                 return i;
             }
         }
